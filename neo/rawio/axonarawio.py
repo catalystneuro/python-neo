@@ -49,7 +49,7 @@ class AxonaRawIO(BaseRawIO):
         )
     """
 
-    extensions = ['bin', 'set'] + [str(i) for i in range(1, 33)]  # Never used?
+    extensions = ['bin', 'set'] + [str(i) for i in range(1, 33)]
     rawmode = 'multi-file'
 
     # In the .bin file, channels are arranged in a strange order.
@@ -121,7 +121,7 @@ class AxonaRawIO(BaseRawIO):
         # SCAN SET FILE
         set_dict = self.get_header_parameters(self.set_file, 'set')
         params['set']['file_header'] = set_dict
-        params['set']['sampling_rate'] = int(set_dict['rawRate'])
+        params['set']['sampling_rate'] = self.get_sampling_rate(set_dict)
 
         # SCAN BIN FILE
         signal_streams = []
@@ -473,6 +473,38 @@ class AxonaRawIO(BaseRawIO):
             key, value = line.split(' ', 1)
             params[key] = value
         return params
+
+    def get_sampling_rate(self, set_dict):
+        """
+        The .set file parameters for the sampling rate are not always
+        trustworthy, ensure that we select them correctly.
+
+        Parameters
+        ----------
+        set_dict : dicts
+            Contains set-file parameters are keys and their values as strings
+        (output of self.get_header_parameters()).
+
+        Returns
+        -------
+        int
+            Sampling rate in Hz
+        """
+        # When Spike2msMode is True, SR = 24000
+        # When Spike2msMode is False and rawRate = 48000, probably SR = 48000
+        # We can use .X files as an addition check whether SR=24000 or 48000
+        rawRate = int(set_dict.get('rawRate'))
+        Spike2msMode = bool(set_dict.get('Spike2msMode'))
+
+        if Spike2msMode:
+            return rawRate // 2
+
+        if self.tetrode_files:
+            pass
+            # Infer sampling rate from timestamps of tetrode (.X) files
+            # see https://github.com/NeuralEnsemble/python-neo/pull/958#discussion_r628808482
+
+        return rawRate
 
     def get_active_tetrode(self):
         """

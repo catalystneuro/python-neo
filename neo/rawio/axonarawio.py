@@ -184,8 +184,7 @@ class AxonaRawIO(BaseRawIO):
                     'Spike2msMode', -1)
                 wf_sampling_rate = spikemode_to_sr.get(int(sm), None)
                 if wf_sampling_rate is None:
-                    wf_sampling_rate = self._to_hz(tdict['sample_rate'],
-                                               dtype=float)
+                    wf_sampling_rate = self._to_hz(tdict['sample_rate'], dtype=float)
 
                 spike_channels.append((unit_name, unit_id, wf_units, wf_gain,
                                        wf_offset, wf_left_sweep,
@@ -592,5 +591,5 @@ class AxonaRawIO(BaseRawIO):
 
         return np.array(sig_channels, dtype=_signal_channel_dtype)
 
-    def _to_hz(self, param, dtype=int):
+    def _to_hz(self, param, dtype=float):
         return dtype(param.replace(' hz', ''))

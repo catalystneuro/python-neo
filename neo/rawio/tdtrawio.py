@@ -101,6 +101,8 @@ class TdtRawIO(BaseRawIO):
         if self.tdt_block_mode == "multi":
             tankname = self.dirname.stem
             for path in self.dirname.iterdir():
+                # if path.name.startswith("._"):
+                #     continue # skip hidden files/folders created by macOS
                 if is_tdtblock(path):
                     segment_names.append(path.stem)
 
@@ -283,7 +285,7 @@ class TdtRawIO(BaseRawIO):
                             raise ValueError("Dtype is changing!!")
 
                     # data buffer test if SEV file exists otherwise TEV
-                    # path = self.dirname / segment_name
+                    path = self.dirname / segment_name
                     if self.tdt_block_mode == "multi":
                         # for multi block datasets the names of sev files are fixed
                         sev_stem = f"{tankname}_{segment_name}_{stream_name}_ch{chan_id}"
